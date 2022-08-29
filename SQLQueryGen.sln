@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLQueryGen", "SQLQueryGen\SQLQueryGen.csproj", "{76577FFC-26BD-411C-A53C-AD4A3CBEE272}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76577FFC-26BD-411C-A53C-AD4A3CBEE272}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76577FFC-26BD-411C-A53C-AD4A3CBEE272}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76577FFC-26BD-411C-A53C-AD4A3CBEE272}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76577FFC-26BD-411C-A53C-AD4A3CBEE272}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F50E5EE1-28F4-4E8B-95F3-5714587DDC74}
+	EndGlobalSection
+EndGlobal
