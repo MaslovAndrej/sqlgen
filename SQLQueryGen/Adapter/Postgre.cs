@@ -4,21 +4,95 @@ using System.Text;
 
 namespace SQLQueryGen.Adapter
 {
-    public class Postgre : Database
+    public class Postgre : IDatabase
     {
-        public override string GetConnectionString()
+        public string Schema { get; set; }
+        public string ConnectionString { get; }
+
+        private string GetConnectionString(string server, string port, string user, string password, string database)
         {
-            return base.GetConnectionString();
+            return string.Format("Host={0};Port={1};Username={2};Password={3};Database={4}", server, port, user, password, database);
         }
 
-        public override string GetFieldType(Type propertyType)
+        public string GetKeyFieldType()
         {
-            return base.GetFieldType();
+            return "serial4";
         }
 
-        public override string GetFieldType(Type propertyType, int size)
+        public string GetNavigateFieldType()
         {
-            return base.GetFieldType();
+            return "int4";
+        }
+
+        public string GetFieldType(Type propertyType)
+        {
+            return GetFieldType(propertyType, 0);
+        }
+
+        public string GetFieldType(Type propertyType, int size)
+        {
+            var fieldType = string.Empty;
+
+            if (propertyType == typeof(string))
+                fieldType = "varchar({0}) NULL";
+            if (propertyType == typeof(short))
+                fieldType = "int2 NOT NULL";
+            if (propertyType == typeof(short?))
+                fieldType = "int2 NULL";
+            if (propertyType == typeof(int))
+                fieldType = "int4 NOT NULL";
+            if (propertyType == typeof(int?))
+                fieldType = "int4 NULL";
+            if (propertyType == typeof(long))
+                fieldType = "int6 NOT NULL";
+            if (propertyType == typeof(long?))
+                fieldType = "int6 NULL";
+            if (propertyType == typeof(double))
+                fieldType = "numeric({0}) NOT NULL";
+            if (propertyType == typeof(double?))
+                fieldType = "numeric({0}) NULL";
+            if (propertyType == typeof(decimal))
+                fieldType = "numeric({0}) NOT NULL";
+            if (propertyType == typeof(decimal?))
+                fieldType = "numeric({0}) NULL";
+            if (propertyType == typeof(bool))
+                fieldType = "bool NOT NULL";
+            if (propertyType == typeof(bool?))
+                fieldType = "bool NULL";
+            if (propertyType == typeof(DateTime))
+                fieldType = "timestamp NOT NULL";
+            if (propertyType == typeof(DateTime?))
+                fieldType = "timestamp NULL";
+
+            if (fieldType.Contains("{0}"))
+            {
+                if (size > 0)
+                    fieldType = string.Format(fieldType, size);
+                else
+                    fieldType = fieldType.Replace("({0})", string.Empty);
+            }
+
+            return fieldType;
+        }
+
+        public string GetFieldValue(Type propertyType, object value)
+        {
+            string fieldValue;
+
+            if (propertyType == typeof(int) || propertyType == typeof(decimal) || propertyType == typeof(double))
+                fieldValue = value.ToString().Replace(",", ".");
+            else if (propertyType == typeof(DateTime))
+                fieldValue = string.Format("'{0}'", (value as DateTime?).Value.ToString("yyyy-MM-dd HH:mm:ss"));
+            else
+                fieldValue = string.Format("'{0}'", value);
+
+            return fieldValue;
+        }
+
+        public Postgre(string server, int port, string user, string password, string database, string schema)
+        {
+            this.Schema = schema;
+            this.ConnectionString = GetConnectionString(server, port.ToString(), user, password, database);
         }
     }
 }

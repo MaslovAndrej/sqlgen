@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 
-namespace SQLQueryGen
+namespace SQLQueryGen.Query
 {
-    public static partial class Generator
+    internal static partial class Generator
     {
-        public static string GenerateInsertQuery<T>(DBInstance instance, T entity)
+        internal static string GenerateInsertQuery<T>(IDatabase database, T entity)
         {
             var type = typeof(T);
 
@@ -50,8 +50,8 @@ namespace SQLQueryGen
                     value = navigatePropertyValue;
                 }
 
-                fieldElements.Add(string.Format("\"{0}\",", fieldAttribute.Name));
-                valueElements.Add(instance.GetFieldValue(property.PropertyType, value) + ",");
+                fieldElements.Add(GetQueryField(fieldAttribute.Name));
+                valueElements.Add(GetQueryFieldValue(database.GetFieldValue(property.PropertyType, value)));
             }
 
             var lastFieldElement = fieldElements.Last();
@@ -61,7 +61,7 @@ namespace SQLQueryGen
             valueElements[valueElements.Count - 1] = lastValueElement.Substring(0, lastValueElement.Length - 1);
 
             var queryElements = new StringBuilder();
-            queryElements.AppendLine(string.Format("INSERT INTO {0}.{1}", instance.Schema, mainTable));
+            queryElements.AppendLine(database.GetInsertQuery(mainTable));
             queryElements.AppendLine("(");
             queryElements.AppendLine(string.Join(Environment.NewLine, fieldElements));
             queryElements.AppendLine(")");
@@ -71,9 +71,19 @@ namespace SQLQueryGen
             queryElements.AppendLine(")");
 
             if (!string.IsNullOrEmpty(keyField))
-                queryElements.AppendLine(string.Format("RETURNING {0}", keyField));
+                queryElements.AppendLine($"RETURNING {keyField}");
 
             return queryElements.ToString();
+        }
+
+        private static string GetQueryField(string name)
+        {
+            return $"{name},";
+        }
+
+        private static string GetQueryFieldValue(string value)
+        {
+            return $"{value},";
         }
     }
 }

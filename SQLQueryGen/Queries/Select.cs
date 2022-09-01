@@ -4,75 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 
-namespace SQLQueryGen
+namespace SQLQueryGen.Query
 {
-    public static class QueryGenerator
+    internal static partial class Generator
     {
-
-        #region GenerateSelect.
-
-        public static string GenerateSelectQuery<T>(AddWhere<T> addWhere, AddOrder<T> addOrder, string direction)
+        internal static string GenerateSelectQuery<T>(IDatabase database)
         {
-            var query = GenerateSelectQuery<T>(addWhere);
-
-            var whereElements = new List<string>();
-            whereElements.Add("ORDER BY");
-            whereElements.Add(addOrder.Result);
-            whereElements.Add(direction);
-
-            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
-        }
-
-        public static string GenerateSelectQuery<T>(AddOrder<T> addOrder, string direction)
-        {
-            var query = GenerateSelectQuery<T>();
-
-            var whereElements = new List<string>();
-            whereElements.Add("ORDER BY");
-            whereElements.Add(addOrder.Result);
-            whereElements.Add(direction);
-
-            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
-        }
-
-        public static string GenerateSelectQuery<T>(AddWhere<T> addWhere)
-        {
-            var query = GenerateSelectQuery<T>();
-
-            var whereElements = new List<string>();
-            whereElements.Add("WHERE");
-            whereElements.Add(addWhere.Result);
-
-            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
-        }
-
-        public static string GenerateSelectQuery<T>(List<AddWhere<T>> addWhereList, string addWhereCondition)
-        {
-            var query = GenerateSelectQuery<T>();
-
-            var whereElements = new List<string>();
-            whereElements.Add("WHERE");
-            foreach (var addWhere in addWhereList)
-            {
-                whereElements.Add(addWhere.Result);
-                whereElements.Add(addWhereCondition);
-            }
-            whereElements.RemoveAt(whereElements.Count - 1);
-
-            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
-        }
-
-        public static string GenerateSelectQuery<T>()
-        {
-            var selectElementTemplate = "{0}.{1} as {2},";
-            var fromElementTemplate = "FROM {0}.{1} {2}";
-            var joinElementTemplate = @"{0} {1}.{2} {3} ON {3}.{4} = {5}.{6}";
-
             var type = typeof(T);
 
             var mainTable = type.GetCustomAttribute<TableAttribute>().Name;
             var mainAlias = mainTable.Substring(0, 3).ToLower();
-            var fromElement = string.Format(fromElementTemplate, DBInitializer.Schema, mainTable, mainAlias);
+            var fromElement = database.GetSelectQueryFromElement(mainTable, mainAlias);
 
             var selectElements = GetSelectElements(type, mainAlias);
             var joinElements = new List<string>();
@@ -89,14 +31,14 @@ namespace SQLQueryGen
                 if (fieldAttribute == null)
                     continue;
 
-                var selectElement = string.Format(selectElementTemplate, mainAlias, fieldAttribute.Name, property.Name);
+                var selectElement = $"{mainAlias}.{fieldAttribute.Name} as {property.Name},";
                 selectElements.Add(selectElement);
 
                 if (navigateAttribute != null)
                 {
-                    var joinType = "JOIN";
-                    if (!navigateAttribute.Required)
-                        joinType = "LEFT JOIN";
+                    var joinType = "LEFT JOIN";
+                    if (navigateAttribute.Required)
+                        joinType = "JOIN";
 
                     var joinPostfix = 0;
                     var joinAlias = navigateAttribute.TableName.Substring(0, 3).ToLower();
@@ -107,8 +49,8 @@ namespace SQLQueryGen
                     }
                     joinAliases.Add(joinAlias);
 
-                    var joinElement = string.Format(joinElementTemplate, joinType, DBInitializer.Schema, navigateAttribute.TableName,
-                                                                         joinAlias, navigateAttribute.FieldName, mainAlias, fieldAttribute.Name);
+                    var joinElement = database.GetSelectQueryJoinElement(joinType, navigateAttribute.TableName,
+                                                                         navigateAttribute.FieldName, fieldAttribute.Name, joinAlias, mainAlias);
                     joinElements.Add(joinElement);
 
                     var propertyType = property.PropertyType;
@@ -129,10 +71,62 @@ namespace SQLQueryGen
             return string.Join(Environment.NewLine, queryElements);
         }
 
+        internal static string GenerateSelectQuery<T>(IDatabase database, AddOrder<T> addOrder)
+        {
+            var query = GenerateSelectQuery<T>(database);
+
+            var whereElements = new List<string>();
+            whereElements.Add("ORDER BY");
+            whereElements.Add(addOrder.Result);
+            whereElements.Add(addOrder.Direction);
+
+            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
+        }
+
+        internal static string GenerateSelectQuery<T>(IDatabase database, AddWhere<T> addWhere)
+        {
+            addWhere.Database = database;
+
+            var query = GenerateSelectQuery<T>(database);
+
+            var whereElements = new List<string>();
+            whereElements.Add("WHERE");
+            whereElements.Add(addWhere.Result);
+
+            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
+        }
+
+        internal static string GenerateSelectQuery<T>(IDatabase database, AddWhere<T> addWhere, AddOrder<T> addOrder)
+        {
+            var query = GenerateSelectQuery<T>(database, addWhere);
+
+            var whereElements = new List<string>();
+            whereElements.Add("ORDER BY");
+            whereElements.Add(addOrder.Result);
+            whereElements.Add(addOrder.Direction);
+
+            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
+        }
+
+        internal static string GenerateSelectQuery<T>(IDatabase database, List<AddWhere<T>> addWhereList, string addWhereCondition)
+        {
+            var query = GenerateSelectQuery<T>(database);
+
+            var whereElements = new List<string>();
+            whereElements.Add("WHERE");
+            foreach (var addWhere in addWhereList)
+            {
+                addWhere.Database = database;
+                whereElements.Add(addWhere.Result);
+                whereElements.Add(addWhereCondition);
+            }
+            whereElements.RemoveAt(whereElements.Count - 1);
+
+            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
+        }
+
         private static List<string> GetSelectElements(Type type, string alias)
         {
-            var selectElementTemplate = "{0}.{1} as {2},";
-
             var selectElements = new List<string>();
 
             var onlyFieldProperies = type.GetProperties()
@@ -144,15 +138,11 @@ namespace SQLQueryGen
                 var attributes = property.GetCustomAttributes();
                 var fieldAttribute = attributes.Where(x => x is FieldAttribute).Cast<FieldAttribute>().FirstOrDefault();
 
-                var selectElement = string.Format(selectElementTemplate, alias, fieldAttribute.Name, property.Name);
+                var selectElement = $"{alias}.{fieldAttribute.Name} as {property.Name},";
                 selectElements.Add(selectElement);
             }
 
             return selectElements;
         }
-
-        #endregion
-
     }
-
 }

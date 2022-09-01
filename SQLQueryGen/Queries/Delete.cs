@@ -4,27 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 
-namespace SQLQueryGen
+namespace SQLQueryGen.Query
 {
-    public static class QueryGenerator
+    internal static partial class Generator
     {
-
-
-        #region GenerateDelete.
-
-        public static string GenerateDeleteQuery<T>()
+        internal static string GenerateDeleteQuery<T>(IDatabase database)
         {
             var type = typeof(T);
 
             var mainTable = type.GetCustomAttribute<TableAttribute>().Name;
-            var mainAlias = mainTable.Substring(0, 3).ToLower();
 
-            return string.Format("DELETE FROM {0}.{1} {2}", DBInitializer.Schema, mainTable, mainAlias);
+            return database.GetDeleteQuery(mainTable);
         }
 
-        public static string GenerateDeleteQuery<T>(AddWhere<T> addWhere)
+        internal static string GenerateDeleteQuery<T>(IDatabase database, AddWhere<T> addWhere)
         {
-            var query = GenerateDeleteQuery<T>();
+            addWhere.Database = database;
+
+            var query = GenerateDeleteQuery<T>(database);
 
             var whereElements = new List<string>();
             whereElements.Add("WHERE");
@@ -33,14 +30,15 @@ namespace SQLQueryGen
             return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
         }
 
-        public static string GenerateDeleteQuery<T>(List<AddWhere<T>> addWhereList, string addWhereCondition)
+        internal static string GenerateDeleteQuery<T>(IDatabase database, List<AddWhere<T>> addWhereList, string addWhereCondition)
         {
-            var query = GenerateDeleteQuery<T>();
+            var query = GenerateDeleteQuery<T>(database);
 
             var whereElements = new List<string>();
             whereElements.Add("WHERE");
             foreach (var addWhere in addWhereList)
             {
+                addWhere.Database = database;
                 whereElements.Add(addWhere.Result);
                 whereElements.Add(addWhereCondition);
             }
@@ -49,7 +47,7 @@ namespace SQLQueryGen
             return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
         }
 
-        public static string GenerateDeleteQuery<T>(T entity)
+        public static string GenerateDeleteQuery<T>(IDatabase database, T entity)
         {
             var type = typeof(T);
 
@@ -62,26 +60,21 @@ namespace SQLQueryGen
                 .Any(xxx => xxx.Key)).FirstOrDefault();
 
             if (property == null)
-                throw new Exception("Удаление возможно только при наличии ключевого свойства.");
+                throw new Exception("Deletion is possible only if there is a key property.");
 
             var value = property.GetValue(entity);
             if (value == null)
-                throw new Exception("Удаление возможно только при наличии значения ключевого свойства.");
+                throw new Exception("Deletion is possible only if there is a value of the key property.");
 
             var keyField = property.GetCustomAttributes().Where(x => x is FieldAttribute).Cast<FieldAttribute>().FirstOrDefault().Name;
-            var keyValue = GetFieldValue(property.PropertyType, value);
+            var keyValue = database.GetFieldValue(property.PropertyType, value);
 
             var queryElements = new StringBuilder();
-            queryElements.AppendLine(string.Format("DELETE FROM {0}.{1}", DBInitializer.Schema, mainTable));
+            queryElements.AppendLine(GenerateDeleteQuery<T>(database));
             queryElements.AppendLine("WHERE");
-            queryElements.AppendLine(string.Format("{0} = {1}", keyField, keyValue));
+            queryElements.AppendLine($"{keyField} = {keyValue}");
 
             return queryElements.ToString();
         }
-
-        #endregion
-
-
     }
-
 }
