@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SQLQueryGen.Adapter
 {
-    public class Postgre : IDatabase
+    public class PostgreSQL : IDatabase
     {
         public string Schema { get; set; }
         public string ConnectionString { get; }
@@ -89,7 +89,7 @@ namespace SQLQueryGen.Adapter
             return fieldValue;
         }
 
-        public Postgre(string server, int port, string user, string password, string database, string schema)
+        public PostgreSQL(string server, int port, string user, string password, string database, string schema)
         {
             this.Schema = schema;
             this.ConnectionString = GetConnectionString(server, port.ToString(), user, password, database);

@@ -46,6 +46,12 @@ Console.WriteLine(regions.Count);
 var cities = Cities.Get();
 Console.WriteLine(cities.Count);
 
+city = Cities.Get(city.Id);
+Console.WriteLine(city.Id);
+
+city = Cities.Get(city.Name);
+Console.WriteLine(city.Name);
+
 Countries.Delete();
 Regions.Delete(region);
 Cities.Delete(city);

@@ -5,7 +5,7 @@ using System.Text;
 using System.Reflection;
 
 namespace SQLQueryGen
-{ 
+{
     public class Generator
     {
         private IDatabase Database { get; set; }
@@ -33,12 +33,16 @@ namespace SQLQueryGen
 
         public string GenerateDeleteQuery<T>(AddWhere<T> addWhere)
         {
-            return SQLQueryGen.Query.Generator.GenerateDeleteQuery<T>(this.Database, addWhere);
+            return SQLQueryGen.Query.Generator.GenerateDeleteQuery<T>(this.Database, new AddWhere<T>(this.Database, addWhere));
         }
 
         public string GenerateDeleteQuery<T>(List<AddWhere<T>> addWhereList, string addWhereCondition)
         {
-            return SQLQueryGen.Query.Generator.GenerateDeleteQuery<T>(this.Database, addWhereList, addWhereCondition);
+            var newAddWhereList = new List<AddWhere<T>>();
+            foreach (var addWhere in addWhereList)
+                newAddWhereList.Add(new AddWhere<T>(this.Database, addWhere));
+
+            return SQLQueryGen.Query.Generator.GenerateDeleteQuery<T>(this.Database, newAddWhereList, addWhereCondition);
         }
 
         public string GenerateDeleteQuery<T>(T entity)
@@ -58,17 +62,21 @@ namespace SQLQueryGen
 
         public string GenerateSelectQuery<T>(AddWhere<T> addWhere)
         {
-            return SQLQueryGen.Query.Generator.GenerateSelectQuery<T>(this.Database, addWhere);
+            return SQLQueryGen.Query.Generator.GenerateSelectQuery<T>(this.Database, new AddWhere<T>(this.Database, addWhere));
         }
 
         public string GenerateSelectQuery<T>(List<AddWhere<T>> addWhereList, string addWhereCondition)
         {
-            return SQLQueryGen.Query.Generator.GenerateSelectQuery<T>(this.Database, addWhereList, addWhereCondition);
+            var newAddWhereList = new List<AddWhere<T>>();
+            foreach (var addWhere in addWhereList)
+                newAddWhereList.Add(new AddWhere<T>(this.Database, addWhere));
+
+            return SQLQueryGen.Query.Generator.GenerateSelectQuery<T>(this.Database, newAddWhereList, addWhereCondition);
         }
 
         public string GenerateSelectQuery<T>(AddWhere<T> addWhere, AddOrder<T> addOrder)
         {
-            return SQLQueryGen.Query.Generator.GenerateSelectQuery<T>(this.Database, addWhere, addOrder);
+            return SQLQueryGen.Query.Generator.GenerateSelectQuery<T>(this.Database, new AddWhere<T>(this.Database, addWhere), addOrder);
         }
 
         public static Generator GetInstance(IDatabase database)

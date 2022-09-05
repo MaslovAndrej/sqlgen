@@ -1,4 +1,5 @@
 ﻿using System;
+using SQLQueryGen;
 using System.Data.SQLite;
 using Dapper;
 
@@ -80,6 +81,48 @@ namespace SQLGenTest
                     return city;
                 },
                 splitOn: "Region, Country").ToList();
+            }
+        }
+
+        public static City Get(int id)
+        {
+            using (var connection = new SQLiteConnection(Config.Database.ConnectionString))
+            {
+                var query = Config.QueryGenerator.GenerateSelectQuery<City>(new AddWhere<City>("Id", Constants.Expression.Equal, id));
+
+                if (debugMode)
+                    Console.WriteLine(query);
+
+                return connection.Query<City, Region, Country, City>(
+                query,
+                (city, linkedRegion, linkedCountry) =>
+                {
+                    city.Region = linkedRegion != null && linkedRegion.Id > 0 ? linkedRegion : null;
+                    city.Country = linkedCountry != null && linkedCountry.Id > 0 ? linkedCountry : null;
+                    return city;
+                },
+                splitOn: "Region, Country").FirstOrDefault();
+            }
+        }
+
+        public static City Get(string name)
+        {
+            using (var connection = new SQLiteConnection(Config.Database.ConnectionString))
+            {
+                var query = Config.QueryGenerator.GenerateSelectQuery<City>(new AddWhere<City>("Name", Constants.Expression.Equal, name));
+
+                if (debugMode)
+                    Console.WriteLine(query);
+
+                return connection.Query<City, Region, Country, City>(
+                query,
+                (city, linkedRegion, linkedCountry) =>
+                {
+                    city.Region = linkedRegion != null && linkedRegion.Id > 0 ? linkedRegion : null;
+                    city.Country = linkedCountry != null && linkedCountry.Id > 0 ? linkedCountry : null;
+                    return city;
+                },
+                splitOn: "Region, Country").FirstOrDefault();
             }
         }
 

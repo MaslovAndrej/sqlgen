@@ -13,44 +13,38 @@ namespace SQLQueryGen
 
     public class AddWhere<T>
     {
-        public IDatabase Database { get; set; }
+        private string Property { get; set; }
+        private string Expression { get; set; }
+        private object Value { get; set; }
         public string Result { get; set; }
-
-        /*public AddWhere(string propertyName, string expression)
-        {
-            var type = typeof(T);
-
-            var mainTable = type.GetCustomAttribute<TableAttribute>().Name;
-            var mainAlias = mainTable.Substring(0, 3).ToLower();
-
-            var property = type.GetProperties().Where(x => x.Name == propertyName).FirstOrDefault();
-            var fieldAttribute = property.GetCustomAttributes().Where(x => x is FieldAttribute).Cast<FieldAttribute>().FirstOrDefault();
-
-            var fieldName = GetQueryFieldName(mainAlias, fieldAttribute.Name);
-
-            Result = $"{mainAlias}.{fieldAttribute.Name} {expression}";
-        }*/
 
         public AddWhere(string propertyName, string expression, object value)
         {
+            Property = propertyName;
+            Expression = expression;
+            Value = value;
+        }
+
+        internal AddWhere(IDatabase database, AddWhere<T> addWhere)
+        {
             var type = typeof(T);
 
             var mainTable = type.GetCustomAttribute<TableAttribute>().Name;
             var mainAlias = mainTable.Substring(0, 3).ToLower();
 
-            var property = type.GetProperties().Where(x => x.Name == propertyName).FirstOrDefault();
+            var property = type.GetProperties().Where(x => x.Name == addWhere.Property).FirstOrDefault();
             var fieldAttribute = property.GetCustomAttributes().Where(x => x is FieldAttribute).Cast<FieldAttribute>().FirstOrDefault();
 
             var fieldName = GetQueryFieldName(mainAlias, fieldAttribute.Name);
-            var fieldValue = Database != null ? Database.GetFieldValue(property.PropertyType, value) : value.ToString();
+            var fieldValue = database != null ? database.GetFieldValue(property.PropertyType, addWhere.Value) : addWhere.Value.ToString();
 
-            if (expression == Constants.Expression.Like)
+            if (addWhere.Expression == Constants.Expression.Like)
             {
                 fieldName = $"lower({fieldName})";
                 fieldValue = string.Format("'%{0}%'", fieldValue.Replace("'", ""));
             }
 
-            Result = $"{mainAlias}.{fieldAttribute.Name} {expression} {fieldValue}";
+            Result = $"{mainAlias}.{fieldAttribute.Name} {addWhere.Expression} {fieldValue}";
         }
 
         private string GetQueryFieldName(string alias, string name)

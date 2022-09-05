@@ -3,7 +3,7 @@ using System.IO;
 
 namespace SQLQueryGen.Adapter
 {
-    public class Sqlite : IDatabase
+    public class SQLite : IDatabase
     {
         public string Schema { get; set; }
         public string FilePath { get; }
@@ -81,14 +81,14 @@ namespace SQLQueryGen.Adapter
             return fieldValue;
         }
 
-        public Sqlite(string fileName, string schema)
+        public SQLite(string fileName, string schema)
         {
             this.Schema = schema;
             this.FilePath = Path.Combine(AppContext.BaseDirectory, fileName);
             this.ConnectionString = GetConnectionString(this.FilePath);
         }
 
-        public Sqlite(string path, string fileName, string schema)
+        public SQLite(string path, string fileName, string schema)
         {
             this.Schema = schema;
             this.FilePath = Path.Combine(path, fileName);
