@@ -70,12 +70,12 @@ namespace SQLQueryGen.Query
 
         private static string GetQueryKeyFieldValue(string name, string value)
         {
-            return $"\"{name}\" = \"{value}\"";
+            return $"\"{name}\" = {value}";
         }
 
         private static string GetQueryFieldValue(string name, string value)
         {
-            return $"\"{name}\" = \"{value}\",";
+            return $"\"{name}\" = {value},";
         }
     }
 }
