@@ -75,18 +75,16 @@ namespace SQLQueryGen.Query
         {
             var query = GenerateSelectQuery<T>(database);
 
-            var whereElements = new List<string>();
-            whereElements.Add("ORDER BY");
-            whereElements.Add(addOrder.Result);
-            whereElements.Add(addOrder.Direction);
+            var orderElements = new List<string>();
+            orderElements.Add("ORDER BY");
+            orderElements.Add(addOrder.Result);
+            orderElements.Add(addOrder.Direction);
 
-            return query + Environment.NewLine + string.Join(Environment.NewLine, whereElements);
+            return query + Environment.NewLine + string.Join(Environment.NewLine, orderElements);
         }
 
         internal static string GenerateSelectQuery<T>(IDatabase database, AddWhere<T> addWhere)
         {
-            addWhere.Database = database;
-
             var query = GenerateSelectQuery<T>(database);
 
             var whereElements = new List<string>();
@@ -116,7 +114,6 @@ namespace SQLQueryGen.Query
             whereElements.Add("WHERE");
             foreach (var addWhere in addWhereList)
             {
-                addWhere.Database = database;
                 whereElements.Add(addWhere.Result);
                 whereElements.Add(addWhereCondition);
             }

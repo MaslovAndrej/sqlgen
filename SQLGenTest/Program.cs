@@ -6,6 +6,10 @@ Countries.SetDebugModeOn();
 Regions.SetDebugModeOn();
 Cities.SetDebugModeOn();
 
+Countries.Drop();
+Regions.Drop();
+Cities.Drop();
+
 Countries.Create();
 Regions.Create();
 Cities.Create();
@@ -45,6 +49,12 @@ var regions = Regions.Get();
 Console.WriteLine(regions.Count);
 var cities = Cities.Get();
 Console.WriteLine(cities.Count);
+
+city = Cities.Get(city.Id);
+Console.WriteLine(city.Id);
+
+city = Cities.Get(city.Name);
+Console.WriteLine(city.Name);
 
 Countries.Delete();
 Regions.Delete(region);

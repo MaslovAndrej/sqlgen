@@ -19,8 +19,6 @@ namespace SQLQueryGen.Query
 
         internal static string GenerateDeleteQuery<T>(IDatabase database, AddWhere<T> addWhere)
         {
-            addWhere.Database = database;
-
             var query = GenerateDeleteQuery<T>(database);
 
             var whereElements = new List<string>();
@@ -38,7 +36,6 @@ namespace SQLQueryGen.Query
             whereElements.Add("WHERE");
             foreach (var addWhere in addWhereList)
             {
-                addWhere.Database = database;
                 whereElements.Add(addWhere.Result);
                 whereElements.Add(addWhereCondition);
             }

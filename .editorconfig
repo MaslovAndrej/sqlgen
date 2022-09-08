@@ -62,6 +62,12 @@ csharp_space_around_binary_operators = before_and_after
 csharp_style_inlined_variable_declaration = true:suggestion
 csharp_indent_labels = no_change
 
+# CS8629: Тип значения, допускающего NULL, может быть NULL.
+dotnet_diagnostic.CS8629.severity = none
+
+# CS8603: Возможно, возврат ссылки, допускающей значение NULL.
+dotnet_diagnostic.CS8603.severity = none
+
 [*.vb]
 #### Стили именования ####
 
