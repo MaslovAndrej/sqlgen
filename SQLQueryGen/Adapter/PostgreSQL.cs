@@ -36,25 +36,29 @@ namespace SQLQueryGen.Adapter
             if (propertyType == typeof(string))
                 fieldType = "varchar({0}) NULL";
             if (propertyType == typeof(short))
-                fieldType = "int2 NOT NULL";
+                fieldType = "smallint NOT NULL";
             if (propertyType == typeof(short?))
-                fieldType = "int2 NULL";
+                fieldType = "smallint NULL";
             if (propertyType == typeof(int))
-                fieldType = "int4 NOT NULL";
+                fieldType = "integer NOT NULL";
             if (propertyType == typeof(int?))
-                fieldType = "int4 NULL";
+                fieldType = "integer NULL";
             if (propertyType == typeof(long))
-                fieldType = "int6 NOT NULL";
+                fieldType = "bigint NOT NULL";
             if (propertyType == typeof(long?))
-                fieldType = "int6 NULL";
+                fieldType = "bigint NULL";
+            if (propertyType == typeof(float))
+                fieldType = "real NOT NULL";
+            if (propertyType == typeof(float?))
+                fieldType = "real NULL";
             if (propertyType == typeof(double))
-                fieldType = "numeric({0}) NOT NULL";
+                fieldType = "double precision NOT NULL";
             if (propertyType == typeof(double?))
-                fieldType = "numeric({0}) NULL";
+                fieldType = "double precision NULL";
             if (propertyType == typeof(decimal))
-                fieldType = "numeric({0}) NOT NULL";
+                fieldType = "money NOT NULL";
             if (propertyType == typeof(decimal?))
-                fieldType = "numeric({0}) NULL";
+                fieldType = "money NULL";
             if (propertyType == typeof(bool))
                 fieldType = "bool NOT NULL";
             if (propertyType == typeof(bool?))
