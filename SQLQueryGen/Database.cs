@@ -54,6 +54,13 @@ namespace SQLQueryGen
                 $"{type} {Schema}.{table} {aliasJoin} ON {aliasJoin}.{fieldJoin} = {aliasMain}.{fieldMain}";
         }
 
+        public string GetDropQuery(string type, string name)
+        {
+            return string.IsNullOrEmpty(Schema) ?
+                $"DROP {type} IF EXISTS {name}" :
+                $"DROP {type} IF EXISTS {Schema}.{name}";
+        }
+
         public string GetKeyFieldType()
         {
             return string.Empty;

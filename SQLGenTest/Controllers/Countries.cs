@@ -124,5 +124,22 @@ namespace SQLGenTest
         }
 
         #endregion
+
+        #region DropTable
+
+        public static void Drop()
+        {
+            using (var connection = new SQLiteConnection(Config.Database.ConnectionString))
+            {
+                var query = Config.QueryGenerator.GenerateDropTableQuery<City>();
+
+                if (debugMode)
+                    Console.WriteLine(query);
+
+                connection.Execute(query);
+            }
+        }
+
+        #endregion
     }
 }

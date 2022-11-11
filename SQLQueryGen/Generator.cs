@@ -79,6 +79,11 @@ namespace SQLQueryGen
             return SQLQueryGen.Query.Generator.GenerateSelectQuery<T>(this.Database, new AddWhere<T>(this.Database, addWhere), addOrder);
         }
 
+        public string GenerateDropTableQuery<T>()
+        {
+            return SQLQueryGen.Query.Generator.GenerateDropTableQuery<T>(this.Database);
+        }
+
         public static Generator GetInstance(IDatabase database)
         {
             if (instance == null)

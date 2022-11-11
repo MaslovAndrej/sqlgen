@@ -6,6 +6,10 @@ Countries.SetDebugModeOn();
 Regions.SetDebugModeOn();
 Cities.SetDebugModeOn();
 
+Countries.Drop();
+Regions.Drop();
+Cities.Drop();
+
 Countries.Create();
 Regions.Create();
 Cities.Create();
